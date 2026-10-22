@@ -1,0 +1,181 @@
+\<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>今天有没有开心</title>
+  <style>
+    /* ---------- 基础重置 ---------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* ---------- 页面背景与整体居中 ---------- */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Helvetica Neue", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(160deg, #fff7e6 0%, #ffe9d6 100%);
+      color: #33302b;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      min-height: 100vh;   /* 老浏览器回退 */
+      min-height: 100dvh;  /* 手机地址栏收起/展开时更准确 */
+      padding: 24px;
+
+      -webkit-tap-highlight-color: transparent;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    /* ---------- 卡片（两屏共用同一套样式） ---------- */
+    .card {
+      width: 100%;
+      max-width: 360px;
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 44px 24px 40px;
+      box-shadow: 0 12px 32px rgba(180, 130, 80, 0.12);
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+
+      /* 每次显示时都会重新播放入场动画 */
+      animation: fadeInUp 0.4s ease both;
+    }
+
+    .card.is-hidden {
+      display: none;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ---------- 第一屏：问题文字 ---------- */
+    .question {
+      font-size: 22px;
+      font-weight: 600;
+      line-height: 1.5;
+      letter-spacing: 0.5px;
+      text-align: center;
+    }
+
+    /* ---------- 第一屏：“是”按钮 ---------- */
+    .btn-yes {
+      width: 132px;
+      height: 132px;
+      border: none;
+      border-radius: 28px;
+      background: linear-gradient(145deg, #ffcf6b, #ff9f43);
+      color: #4a2c00;
+      font-size: 32px;
+      font-weight: 700;
+      font-family: inherit;
+
+      cursor: pointer;
+      touch-action: manipulation;
+      box-shadow: 0 8px 20px rgba(255, 159, 67, 0.35);
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+
+    .btn-yes:active {
+      transform: scale(0.94);
+      box-shadow: 0 4px 10px rgba(255, 159, 67, 0.3);
+    }
+
+    /* ---------- 第二屏：小红花 ---------- */
+    .flower {
+      width: 112px;
+      height: 112px;
+      animation: float 3.6s ease-in-out infinite;
+    }
+
+    /* 很慢很轻的上下浮动，不抢戏 */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-6px); }
+    }
+
+    /* ---------- 第二屏：文字 ---------- */
+    .message {
+      font-size: 22px;
+      font-weight: 600;
+      line-height: 1.5;
+      letter-spacing: 0.5px;
+      text-align: center;
+    }
+
+    .message .sub {
+      display: block;
+      margin-top: 10px;
+      font-size: 17px;
+      font-weight: 400;
+      color: #9c8f80;
+      letter-spacing: 0.5px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 音乐：把 music.mp3 换成你自己的文件名，放在和本 HTML 同一目录 -->
+  <audio id="bgm" src="chuanzhang.mp3" loop preload="auto"></audio>
+
+  <!-- ========== 第一屏 ========== -->
+  <main class="card" id="page1">
+    <h1 class="question">今天有没有开心？</h1>
+    <button class="btn-yes" id="btnYes" type="button">是</button>
+  </main>
+
+  <!-- ========== 第二屏 ========== -->
+  <main class="card is-hidden" id="page2">
+    <!-- 小红花：5 片花瓣，围绕花心均匀旋转 -->
+    <svg class="flower" viewBox="0 0 120 120" aria-hidden="true">
+      <g fill="#ff5c5c">
+        <ellipse cx="60" cy="32" rx="13" ry="22"/>
+        <ellipse cx="60" cy="32" rx="13" ry="22" transform="rotate(72 60 60)"/>
+        <ellipse cx="60" cy="32" rx="13" ry="22" transform="rotate(144 60 60)"/>
+        <ellipse cx="60" cy="32" rx="13" ry="22" transform="rotate(216 60 60)"/>
+        <ellipse cx="60" cy="32" rx="13" ry="22" transform="rotate(288 60 60)"/>
+      </g>
+      <circle cx="60" cy="60" r="13" fill="#ffd93d"/>
+      <circle cx="55.5" cy="55.5" r="4" fill="#fff6c2" opacity="0.85"/>
+    </svg>
+
+    <p class="message">
+      今天也辛苦了
+      <span class="sub">记得按时吃饭</span>
+    </p >
+  </main>
+
+  <script>
+    const bgm   = document.getElementById('bgm');
+    const page1 = document.getElementById('page1');
+    const page2 = document.getElementById('page2');
+    const btnYes = document.getElementById('btnYes');
+
+    /* 点击“是”：播放音乐 + 切换到第二屏 */
+    btnYes.addEventListener('click', async () => {
+      bgm.volume = 0.6;   // 0 ~ 1，嫌吵可以改小
+
+      try {
+        // 必须在“用户点击”的上下文里调用，浏览器才允许播放
+        await bgm.play();
+      } catch (err) {
+        // 音乐出问题时不影响页面切换
+        console.warn('音乐播放失败：', err);
+      }
+
+      page1.classList.add('is-hidden');
+      page2.classList.remove('is-hidden');
+    });
+  </script>
+
+</body>
+</html>
